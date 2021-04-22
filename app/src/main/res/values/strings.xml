@@ -19,4 +19,14 @@
     <string name="point1">+1 POINT</string>
     <string name="reset">RESET</string>
     <string name="title_activity_two_team">twoTeam</string>
+    <string name="teamb">TeamB</string>
+    <string name="scorea">0</string>
+    <string name="scoreb">0</string>
+    <string name="title_activity_main2">MainActivity</string>
+    <string name="money">type RMB</string>
+    <string name="result">HELLO</string>
+    <string name="dollar">dollar</string>
+    <string name="pound">pound</string>
+    <string name="won">won</string>
+    <string name="open">open score</string>
 </resources>
