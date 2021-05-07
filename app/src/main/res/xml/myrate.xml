@@ -1,0 +1,6 @@
+<?xml version ="1.0" encoding ="utf-8" standalone='yes'?>
+<map>
+    <float name="dollarrate" value="" />
+    <float name="poundrate" value="" />
+    <float name="wonrate" value="" />
+</map>

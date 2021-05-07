@@ -29,4 +29,6 @@
     <string name="pound">pound</string>
     <string name="won">won</string>
     <string name="open">open score</string>
+    <string name="btn_config">Config</string>
+    <string name="save">save</string>
 </resources>

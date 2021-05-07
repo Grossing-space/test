@@ -53,10 +53,12 @@
         android:onClick="click"
         android:text="@string/won" />
 
+
     <Button
-        android:id="@+id/button4"
+        android:id="@+id/btn_config"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:onClick="open"
-        android:text="@string/open" />
+        android:layout_marginTop="40dp"
+        android:onClick="openConfig"
+        android:text="@string/btn_config" />
 </LinearLayout>
