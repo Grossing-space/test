@@ -3,6 +3,7 @@ package com.example.hello;
 import android.app.Activity;
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Message;
@@ -13,15 +14,20 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import androidx.annotation.NonNull;
+import androidx.annotation.RequiresApi;
 import androidx.appcompat.app.AppCompatActivity;
+
+import org.jsoup.Jsoup;
+import org.jsoup.nodes.Document;
+import org.jsoup.nodes.Element;
+import org.jsoup.select.Elements;
 
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.Reader;
-import java.net.HttpURLConnection;
-import java.net.MalformedURLException;
 import java.net.URL;
+import java.time.LocalDate;
 
 public class MainActivity2 extends AppCompatActivity implements Runnable {
     EditText money;
@@ -30,8 +36,9 @@ public class MainActivity2 extends AppCompatActivity implements Runnable {
     float dollarRate =0.0f;
     float poundRate =0.2f;
     float wonRate =150.3f;
-
+    int time=0;
     Handler handler;
+    @RequiresApi(api = Build.VERSION_CODES.O)
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -43,9 +50,19 @@ public class MainActivity2 extends AppCompatActivity implements Runnable {
         dollarRate= SharedPreferences.getFloat("dollarrate",0.0f);
         poundRate= SharedPreferences.getFloat("poundrate",0.0f);
         wonRate= SharedPreferences.getFloat("wonrate",0.0f);
+        String updateStr=SharedPreferences.getString("update_str","");
+        Log.i(TAG,"oncreate:dollar="+dollarRate);
+        Log.i(TAG,"oncreate: updatestr="+updateStr);
 
-        Thread t=new Thread(this);
-        t.start();
+        LocalDate today=LocalDate.now();
+        if(updateStr.equals(today.toString())){
+            Log.i(TAG,"oncreate:日期相等，不再从网络获取数据");
+        }
+        else {
+            Thread t=new Thread(this);
+            t.start();
+
+        }
 
         handler=new Handler(){
             @Override
@@ -53,13 +70,18 @@ public class MainActivity2 extends AppCompatActivity implements Runnable {
                 if(msg.what==7){
                     String val = (String)msg.obj;
                     Log.i(TAG,"handMessage:val="+val);
-                    result.setText(val);
+                    Toast.makeText(MainActivity2.this,"数据已更新",Toast.LENGTH_SHORT).show();
+                   // result.setText(val);
                 }
                 super.handleMessage(msg);
             }
         };
     }
 
+    @Override
+    protected void onStart() {
+        super.onStart();
+    }
     public void click(View btn){
         float r=0.0f;
         if(btn.getId()==R.id.dollar){
@@ -115,26 +137,56 @@ public class MainActivity2 extends AppCompatActivity implements Runnable {
 
     @Override
     public void run() {
+        if(time==0){
         Log.i(TAG,"run:....");
         URL url = null;
+//        try {
+//            url = new URL("https://www.usd-cny.com/icbc.htm");
+//            HttpURLConnection http=(HttpURLConnection)url.openConnection();
+//            InputStream in = http.getInputStream();
+//
+//            String html = inputStream2String(in);
+//            Log.i(TAG,"run: html=" +html);
+//
+//        } catch (MalformedURLException e) {
+//            e.printStackTrace();
+//        } catch (IOException e) {
+//            e.printStackTrace();
+//        }
+
         try {
-            url = new URL("https://www.usd-cny.com/icbc.htm");
-            HttpURLConnection http=(HttpURLConnection)url.openConnection();
-            InputStream in = http.getInputStream();
-
-            String html = inputStream2String(in);
-            Log.i(TAG,"run: html=" +html);
-
-        } catch (MalformedURLException e) {
-            e.printStackTrace();
+            Document doc= Jsoup.connect("https://www.usd-cny.com/bankofchina.htm").get();
+            Log.i(TAG,"title: "+doc.title());
+            Element table = doc.getElementsByTag("table").first();
+            Elements trs = table.getElementsByTag("tr");
+//            for(Element tr : trs){
+//                Elements tds = tr.getElementsByTag("td");
+//                if(tds.size()>0){
+//                    String str = tds.get(0).text();
+//                    String val = tds.get(5).text();
+//                    Log.i(TAG,"run: td1= "+tds.get(0).text() +"=>"+tds.get(5).text());
+//                }
+//            }
+            Element dd =doc.select("body > section > div > div > article > table > tbody > tr:nth-child(27) > td:nth-child(6)").first();
+            Log.i(TAG,"run: 美元="+ dd.text());
+            dollarRate=Float.parseFloat(dd.text());
+            Element pp =doc.select("body > section > div > div > article > table > tbody > tr:nth-child(9) > td:nth-child(6)").first();
+            Log.i(TAG,"run: 英镑="+ pp.text());
+            poundRate=Float.parseFloat(pp.text());
+            Element ww =doc.select("body > section > div > div > article > table > tbody > tr:nth-child(14) > td:nth-child(6)").first();
+            Log.i(TAG,"run: 韩元="+ ww.text());
+            wonRate=Float.parseFloat(ww.text());
+            timecheck();
         } catch (IOException e) {
             e.printStackTrace();
         }
 
-
-
+    }}
+    public void timecheck(){
+        time=1;
+        Handler handlertime= new Handler();
+        handlertime.postDelayed(this, 24*60*60);
     }
-
     private String inputStream2String(InputStream inputStream) throws IOException{
         final int bufferSize = 1024;
         final char[] buffer = new char[bufferSize];
@@ -147,5 +199,8 @@ public class MainActivity2 extends AppCompatActivity implements Runnable {
             out.append(buffer,0,rsz);
         }
         return out.toString();
+    }
+    public void setHandler(Handler handler){
+        this.handler = handler;
     }
 }
